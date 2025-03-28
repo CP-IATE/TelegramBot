@@ -1,4 +1,6 @@
 ﻿using Telegram.Bot;
+using TelegramBot.Persistence.Requests;
+using TelegramBot.Services.FileSenderStrategy;
 
 namespace TelegramBot.Services;
 
@@ -11,8 +13,19 @@ public class MessageSenderService
         _botClient = botClient;
     }
     
-    public async Task SendTextMessage(long chatId, string message, CancellationToken cancellationToken)
+    public async Task SendMessageAsync(long chatId, SendMessageRequest message)
     {
-        await _botClient.SendMessage(chatId, message, cancellationToken: cancellationToken);
+        if (message.message.attachments is { } attachments)
+        {
+            foreach (var attachment in attachments)
+            {
+                var fileSender = FileSenderFactory.GetFileSender(attachment.type);
+                await fileSender.SendFileAsync(attachment, chatId, _botClient, $"{message.author.tag}\n{message.author.name}\nFrom {message.channel}\n{message.message.text}");
+            }
+        }
+        else
+        {
+            await _botClient.SendMessage(chatId, $"{message.author.tag}\n{message.author.name}\nFrom {message.channel}\n{message.message.text}");
+        }
     }
 }
