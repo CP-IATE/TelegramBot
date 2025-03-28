@@ -25,3 +25,4 @@
 *.editorconfig
 *.env
 *.log
+*.xml
