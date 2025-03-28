@@ -37,37 +37,34 @@ public sealed class TelegramBotService : BackgroundService
             if (update.Message is not { } message) return;
             var text = message.Text;
             Console.WriteLine($"Message from {message.From.Id}\n {text}");
-            if (message.Photo is { } photo)
+
+            switch (message)
             {
-                await HandleFileAsync(photo[0].FileId, "Files\\Photo", cancellationToken);
-            }
-            else if (message.Document is { } document)
-            {
-                await HandleFileAsync(document.FileId, "Files\\Documents", cancellationToken);
-            }
-            else if (message.Video is { } video)
-            {
-                await HandleFileAsync(video.FileId, "Files\\Video", cancellationToken);
-            }
-            else if (message.Audio is { } audio)
-            {
-                await HandleFileAsync(audio.FileId, "Files\\Audio", cancellationToken);
-            }
-            else if (message.Voice is { } voice)
-            {
-                await HandleFileAsync(voice.FileId, "Files\\Voice", cancellationToken);
-            }
-            else if (message.Sticker is { } sticker)
-            {
-                await HandleFileAsync(sticker.FileId, "Files\\Sticker", cancellationToken);
-            }
-            else
-            {
-               await botClient.SendMessage(
-                   message.Chat.Id, 
-                   text: $"Message from {message.From.Id}\n{text}",
-                   cancellationToken: cancellationToken
-               ); 
+                case { Photo: { } photo }:
+                    await SaveFileAsync(photo.Last().FileId, "Files\\Photo", cancellationToken);
+                    break;
+                case { Document: { } document }:
+                    await SaveFileAsync(document.FileId, "Files\\Documents", cancellationToken);
+                    break;
+                case { Video: { } video }:
+                    await SaveFileAsync(video.FileId, "Files\\Video", cancellationToken);
+                    break;
+                case { Audio: { } audio }:
+                    await SaveFileAsync(audio.FileId, "Files\\Audio", cancellationToken);
+                    break;
+                case { Voice: { } voice }:
+                    await SaveFileAsync(voice.FileId, "Files\\Voice", cancellationToken);
+                    break;
+                case { Sticker: { } sticker }:
+                    await SaveFileAsync(sticker.FileId, "Files\\Sticker", cancellationToken);
+                    break;
+                default:
+                    await botClient.SendMessage(
+                        message.Chat.Id,
+                        text: $"Message from {message.From.Id}\n{text}",
+                        cancellationToken: cancellationToken
+                    );
+                    break;
             }
         }
         catch (Exception e)
@@ -82,7 +79,7 @@ public sealed class TelegramBotService : BackgroundService
         return Task.CompletedTask;
     }
     
-    private async Task HandleFileAsync(string fileId, string directoryPath, CancellationToken cancellationToken)
+    private async Task SaveFileAsync(string fileId, string directoryPath, CancellationToken cancellationToken)
     {
         var file = await _botClient.GetFile(fileId, cancellationToken);
         var filePath = Path.Combine(directoryPath, fileId + Path.GetExtension(file.FilePath));
@@ -90,7 +87,7 @@ public sealed class TelegramBotService : BackgroundService
 
         await using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
-            await _botClient.DownloadFile(file.FilePath, fileStream, cancellationToken);
+            await _botClient.DownloadFile(file.FilePath!, fileStream, cancellationToken);
         }
     }
 }
