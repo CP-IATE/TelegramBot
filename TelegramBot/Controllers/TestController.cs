@@ -2,12 +2,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
+using TelegramBot.Persistence.Requests;
 using TelegramBot.Services;
 
 namespace TelegramBot.Controllers;
 
 [ApiController]
-[Route("api/test")]
+[Route("Telegram")]
 public class TestController : ControllerBase
 {
     private readonly IConfiguration _configuration;
@@ -33,12 +34,12 @@ public class TestController : ControllerBase
     /// <summary>
     /// <para>Test message sending</para>
     /// Use this endpoint to test if the bot can send text messages
-    [HttpPost("sendmessage")]
+    [HttpPost("{id?}")]
     [ProducesDefaultResponseType]
-    public async Task<IActionResult> SendMessage([FromQuery] long chatId, string message)
+    public async Task<IActionResult> SendMessage([FromRoute] long id, [FromBody] SendMessageRequest request)
     {
         var context = _serviceProvider.GetRequiredService<MessageSenderService>();
-        await context.SendTextMessage(chatId, message, CancellationToken.None);
+        await context.SendMessageAsync(id, request);
         return Ok();
     }
 }
