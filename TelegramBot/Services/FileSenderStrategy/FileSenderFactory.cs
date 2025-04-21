@@ -6,10 +6,11 @@ public class FileSenderFactory
     {
         return type switch
         {
-            "jpg" => new PhotoFileSender(),
+            "jpg" or "png" => new PhotoFileSender(),
             "mp3" => new AudioFileSender(),
             "mp4" => new VideoFileSender(),
             "oga" => new VoiceFileSender(),
+            "mediaGroup" => new MediaGroupFileSender(),
             _ => new GeneralFileSender()
         };
     }

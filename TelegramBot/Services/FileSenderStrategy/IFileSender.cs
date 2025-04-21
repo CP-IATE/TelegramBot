@@ -5,5 +5,5 @@ namespace TelegramBot.Services.FileSenderStrategy;
 
 public interface IFileSender
 {
-    Task SendFileAsync(AttachmentDto attachment, long chatId, ITelegramBotClient botClient, string? caption = null);
+    Task SendFileAsync(List<AttachmentDto> attachments, long chatId, ITelegramBotClient botClient, string? caption = null);
 }

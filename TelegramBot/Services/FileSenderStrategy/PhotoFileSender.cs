@@ -1,16 +1,18 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using TelegramBot.Persistence.DTOs;
 
 namespace TelegramBot.Services.FileSenderStrategy;
 
 public class PhotoFileSender : IFileSender
 {
-    public async Task SendFileAsync(AttachmentDto attachment, long chatId, ITelegramBotClient botClient, string? caption = null)
+    public async Task SendFileAsync(List<AttachmentDto> attachments, long chatId, ITelegramBotClient botClient, string? caption = null)
     {
+        var attachment = attachments.First();
         using (var fileStream = new MemoryStream(Convert.FromBase64String(attachment.data)))
         {
-            await botClient.SendPhoto(chatId, new InputFileStream(fileStream, $"{Guid.NewGuid()}.{attachment.type}"), caption: caption);
+            await botClient.SendPhoto(chatId, new InputFileStream(fileStream, $"{Guid.NewGuid()}.{attachment.type}"), caption: caption, ParseMode.MarkdownV2);
         }
     }
 }
