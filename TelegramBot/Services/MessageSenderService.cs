@@ -1,4 +1,5 @@
 ﻿using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 using TelegramBot.Persistence.Requests;
 using TelegramBot.Services.FileSenderStrategy;
 
@@ -15,17 +16,22 @@ public class MessageSenderService
     
     public async Task SendMessageAsync(long chatId, SendMessageRequest message)
     {
-        if (message.message.attachments is { } attachments)
+        if (message.message.attachments.Any())
         {
-            foreach (var attachment in attachments)
+            if (message.message.attachments.Count > 1)
             {
-                var fileSender = FileSenderFactory.GetFileSender(attachment.type);
-                await fileSender.SendFileAsync(attachment, chatId, _botClient, $"{message.author.tag}\n{message.author.name}\nFrom {message.channel}\n{message.message.text}");
+                var fileSender = FileSenderFactory.GetFileSender("mediaGroup");
+                await fileSender.SendFileAsync(message.message.attachments, chatId, _botClient, $"*Name:* `{message.author.name}({message.author.tag})`\n*Channel:* `{message.channel}`\n{message.message.text}");
+            }
+            else
+            {
+                var fileSender = FileSenderFactory.GetFileSender(message.message.attachments.First().type.Split('.').Last());
+                await fileSender.SendFileAsync(message.message.attachments, chatId, _botClient, $"*Name:* `{message.author.name}({message.author.tag})`\n*Channel:* `{message.channel}`\n{message.message.text}");
             }
         }
         else
         {
-            await _botClient.SendMessage(chatId, $"{message.author.tag}\n{message.author.name}\nFrom {message.channel}\n{message.message.text}");
+            await _botClient.SendMessage(chatId, $"*Name:* `{message.author.name}({message.author.tag})`\n*Channel:* `{message.channel}`\n{message.message.text}", ParseMode.MarkdownV2);
         }
     }
 }

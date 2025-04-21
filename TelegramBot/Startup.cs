@@ -53,7 +53,7 @@ public class Startup
             builder.UseSwaggerUI();
         }
 
-        builder.UseHttpsRedirection();
+        // builder.UseHttpsRedirection();
 
         builder.UseCors();
         
