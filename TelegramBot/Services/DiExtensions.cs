@@ -10,5 +10,8 @@ public static class DiExtensions
         collection
             .AddSingleton<ITelegramBotClient>(new TelegramBotClient(Environment.GetEnvironmentVariable("BOT_TOKEN")))
             .AddSingleton<ReceiverOptions>()
-            .AddHostedService<TelegramBotService>();
+            .AddHostedService<TelegramBotService>()
+            .AddScoped<MessageSenderService>()
+            .AddHttpClient<HttpClientService>()
+            .Services;
 }
